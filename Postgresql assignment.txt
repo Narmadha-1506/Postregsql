@@ -1,0 +1,407 @@
+JOINS:
+------
+CROSS JOIN:
+----------
+If T1 has n rows and T2 has m rows, the result set will have nxm rows. 
+For example, the A1 has 2 rows and A2 has 2 rows, the result set will have 2x2=4 rows.
+
+create table A1(last_name char(1));
+insert into A1 values('A');
+insert into A1 values('B');
+create table A2(sno int);
+insert into A2 values(1);
+insert into A2 values(2);
+select * from A1 cross join A2;
+output:
+-------
+last_name | sno
+-------+-------
+ A     |     1
+ B     |     1
+ A     |     2
+ B     |     2
+inner join:
+----------
+select matched record from both table
+
+create table custome(customer_id int primary key,last_name varchar(20),first_name	varchar(20));
+insert into custome values(4000,'Narmadha','Tamil');
+insert into custome values(5000,'Divya','English');
+insert into custome values(6000,'Sathya','Maths');
+insert into custome values(7000,'Shankar','Science');
+insert into custome values(8000,'Saradha','Sci');
+insert into custome values(9000,'Siva','Social');
+create table ord(order_id int,customer_id int,empname varchar(10));
+insert into ord values(1,7000);
+insert into ord values(2,5000);
+insert into ord values(3,8000);
+insert into ord values(4,4000);
+SELECT custome.last_name, ord.order_id
+FROM custome 
+INNER JOIN ord
+ON custome.customer_id = ord.customer_id;
+output:
+------
+  	last_name	order_id
+1	Shankar	         1
+2	Divya	         2
+3	Saradha	         3
+4	Narmadha	 4
+Outer join:
+---------
+union of two table.
+1.Left outer join
+2.right outer join
+3.Full join
+Left(outer)join:
+-----------------
+Returns all records from the left table, and the matched records from the right table.If no match found returns null.
+SELECT custome.last_name, ord.order_id
+FROM custome 
+LEFT OUTER JOIN ord
+ON custome.customer_id = ord.customer_id;
+Output:
+-------
+  	last_name	order_id
+1	Shankar	          1
+2	Divya	          2
+3	Saradha	          3
+4	Narmadha	  4
+5	Siva	        NULL
+6	Sathya	        NULL
+Right(Outer) join:
+-----------------
+Returns all records from the right table, and the matched records from the left table
+SELECT custome.last_name, ord.order_id
+FROM custome 
+LEFT OUTER JOIN ord
+ON custome.customer_id = ord.customer_id;
+Output:
+-------
+ 	last_name	order_id
+1	Shankar	         1
+2	Divya	         2
+3	Saradha	         3
+4	Narmadha	 4
+Full(outer)join:
+---------
+The full join returns all records when there is a match in left or right table records.
+SELECT custome.last_name, ord.order_id
+FROM custome 
+FULL JOIN ord
+ON custome.customer_id = ord.customer_id;
+output:
+-------
+ 	last_name	order_id
+1	Shankar 	1
+2	Divya	        2
+3	Saradha	        3
+4	Narmadha	4
+5	Siva	      NULL
+6	Sathya	      NULL
+Indexes:
+--------
+Indexes is like index in back side of the book.it helps to speed up select queries,it is the way to find and sort records
+within database table faster.Indexes can also be unique.without index the searching and finding of data is slow compared to index.
+
+Types of index:
+--------------
+clustered index-data are stored in data page in leaf node all the data are arranged alphabetically for example:data start with 
+A are stored separately B are stored seperately so we can easily fetch the data.
+
+non-clustered index-search the content by id,no.
+
+unique index-it does not allow any duplicate value to be inserted into the table.
+
+PostgreSQL provides several index types: B-tree, Hash, GiST, SP-GiST, GIN and BRIN.
+ 
+Each index type uses a different algorithm that is best suited to different types of queries.
+
+By default, the CREATE INDEX command creates B-tree indexes, which fit the most common situations.
+
+without index:
+-------------
+create table foo2(Atable integer,Btable int);
+insert into foo2 values(20,30);
+insert into foo2 values(20,90);
+select * from foo2;
+EXPLAIN SELECT * FROM foo2;
+output:
+-------
+  	atable	btable
+1	20	30
+2	20	90
+
+ 	QUERY PLAN
+1	Seq Scan on foo2  (cost=0.00..32.60 rows=2260 width=8)
+with index:
+---------------
+create table foo2(Atable integer,Btable int);
+insert into foo2 values(20,30);
+insert into foo2 values(20,90);
+create index index_foo2 on foo2(Atable);
+select * from foo2;
+EXPLAIN SELECT * FROM foo2;
+output:
+-------
+  	atable	btable
+1	20	30
+2	20	90
+
+  	QUERY PLAN
+1	Seq Scan on foo2  (cost=0.00..1.02 rows=2 width=8)
+
+cluster index:
+--------------
+create table foo2(Atable integer,Btable int);
+insert into foo2 values(20,30);
+insert into foo2 values(40,90);
+create   index index_foo2 on foo2(Atable);
+cluster index_foo2 on foo2;
+select * from foo2;
+EXPLAIN SELECT * FROM foo2;
+output:
+------
+ 	atable	btable
+1	20	30
+2	40	90
+
+ 	QUERY PLAN
+1	Seq Scan on foo2  (cost=0.00..1.02 rows=2 width=8)
+
+unique index:
+--------------
+create table foo2(Atable integer,Btable int);
+insert into foo2 values(20,30);
+insert into foo2 values(40,90);
+create  unique index index_foo2 on foo2(Atable);
+select * from foo2;
+EXPLAIN SELECT * FROM foo2;
+output:
+-------
+  	atable	btable
+1	20	30
+2	40	90
+
+  	QUERY PLAN
+1	Seq Scan on foo2  (cost=0.00..1.02 rows=2 width=8)
+primary key:
+-----------
+primary key is fiels in table which uniquely identifies each row in the table
+
+for eg:create a table for employee each employee has separate acc_no  so we use primary key for id because it does not allow any duplicates and
+it does not have any null values.if we try to insert duplicate or null values it throws an error.(Error(s), warning(s):
+23502: null value in column "acc_no" violates not-null constraint)
+example:
+-------
+create table emp1(frst_name varchar(30),acc_no varchar(30) primary key);
+insert into emp1 values('Narmadha','1234');
+insert into emp1 values('Shankar','1235');
+insert into emp1 values('Divya','1236');
+select * from emp1;
+
+output:
+-------
+ 	frst_name	acc_no
+1	Narmadha	1234
+2	Shankar	        1235
+3	Divya	        1236
+
+Foreign key:
+-----------
+Foreign key is a column or group of column in a table that reference the primary key of another table(is used to link two table).
+A table which contain foreign key is called child table.A table which referenced by the foreign key is called parent table
+example:
+----------
+I create table for employee with data emp_name and  acc_no and  another table salary with acc_no and salary.now i going to assign the salary for january month to employee
+based on the acc_no given in the employee table.so i give primary key constarints to acc_no in both table and foreign key for reference.
+Query:
+------
+create table emp1(frst_name varchar(30),acc_no varchar(30) primary key);
+insert into emp1 values('Narmadha','1234');
+insert into emp1 values('Shankar','1235');
+insert into emp1 values('Divya','1236');
+create table salary1(acc_no varchar(30),january varchar(30),primary key(acc_no),foreign key(acc_no) references emp1(acc_no));
+insert into salary1 values('1234',20000);
+insert into salary1 values('1235',30000);
+insert into salary1 values('1236',30000);
+select * from emp1;
+select * from salary1;
+output:
+--------
+ 	frst_name	acc_no
+1	Narmadha	1234
+2	Shankar	        1235
+3	Divya	        1236
+
+ 	acc_no	january
+1	1234	20000
+2	1235	30000
+3	1236	30000
+
+if i try to insert salary 30,000 for 1237 acc_no  it shows error( insert or update on table "salary1" violates foreign key constraint "salary1_acc_no_fkey").
+
+cascade methods:
+----------------
+*on delete cascade-if you delete row in parent table the corresponding rows are deleted in child table
+
+*on update cascade-if you update row in parent table the corresponding rows are update in child table
+
+ON DELETE  CASCADE METHOD:
+---------------------------
+create table emp(frst_name varchar(30),acc_no varchar(30) primary key);
+insert into emp values('Narmadha','1234');
+insert into emp values('Shankar','1235');
+create table salary(acc_no varchar(30),january varchar(30),primary key(acc_no),foreign key(acc_no) references emp(acc_no) on delete cascade);
+insert into salary values('1234',20000);
+insert into salary values('1235',30000);
+delete from emp where acc_no='1234';
+select * from emp;
+select * from salary;
+output:
+-------
+ 	frst_name	acc_no
+1	Shankar	        1235
+
+        acc_no	january
+1	1235	30000
+
+ON UPDATE CASCADE METHOD:
+------------------------
+drop table if exists emp;
+create table emp(frst_name varchar(30),acc_no varchar(30) primary key);
+insert into emp values('Narmadha','1234');
+insert into emp values('Shankar','1235');
+drop table if exists salary;
+create table salary(acc_no varchar(30),january varchar(30),primary key(acc_no),foreign key(acc_no) references emp(acc_no) on update cascade);
+insert into salary values('1234',20000);
+insert into salary values('1235',30000);
+update emp set acc_no='1236' where acc_no='1234';
+select * from emp;
+select * from salary;
+output:
+-------
+      frst_name	       acc_no
+1	Shankar	        1235
+2	Narmadha	1236
+
+	acc_no	january
+1	1235	30000
+2	1236	20000
+
+ON DELETE RESTRICT:(Deletion is restricted)
+-------------------
+drop table if exists emp;
+create table emp(frst_name varchar(30),acc_no varchar(30) primary key);
+insert into emp values('Narmadha','1234');
+insert into emp values('Shankar','1235');
+drop table if exists salary;
+create table salary(acc_no varchar(30),january varchar(30),primary key(acc_no),foreign key(acc_no) references emp(acc_no) on delete restrict);
+insert into salary values('1234',20000);
+insert into salary values('1235',30000);
+update emp set acc_no='1236' where acc_no='1234';
+select * from emp;
+select * from salary;
+Alias:
+------
+you can rename a table or column temporarily by giving another name,which is alias.Renaming is a temporary
+change and the actual table name does not change in database.
+
+create table cus(id int,f_name varchar(20));
+insert into cus values(20,'Narmadha');
+select * from cus;
+select c.id as customer_id,c.f_name as cus_name from cus as c;
+output:
+---------
+ 	id	f_name
+1	20	Narmadha
+
+  	customer_id	cus_name
+1	  20	        Narmadha
+Alter table:
+------------
+Alter table command is used to add delete or modify column in existing table.
+
+create table cus(id int,f_name varchar(20));
+insert into cus values(20,'Narmadha');
+select c.id as customer_id,c.f_name as cus_name from cus as c;
+ALTER TABLE cus ADD GENDER char(1);
+select * from cus;
+truncate table cus;
+select * from cus;
+
+ouyput:
+-------
+  	customer_id	cus_name
+1	20	        Narmadha
+
+  	id	f_name	       gender
+1	20	Narmadha	NULL
+VIEWS:
+------
+views is not a real table.it is a virtual table,views can reduce complexity for eg:if we join 2 table
+there is lots of complexity if you use view it reduce the complexity.
+view for single table:
+----------------------
+create table emp_table(sname varchar(20),sid int);
+insert into emp_table values('Narmadha',06);
+create view details as select sname,sid from emp_table;
+select * from details;
+output:
+-------
+  	sname	       sid
+1	Narmadha	6
+
+view for multiple table:
+-----------------------
+creating view for multiple table we use alias
+
+create table emp_table (sname varchar(20),sid int);
+insert into emp_table values('Narmadha',06);
+create table mark4(marks int,addr int);
+insert into mark4 values(60,40);
+create view details as select st.sname,st.sid,m1.marks from emp_table as st,mark4 as m1;
+select * from details;
+output:
+-------
+  	sname	       sid	marks
+1	Narmadha	6	60
+
+Drop view:
+----------
+drop view details;
+TRANSACTION:
+------------
+commit or end transaction:
+-------------------------
+drop table if exists stud1;
+create table stud1 (sname varchar(20),sid int);
+insert into stud1 values('Narmadha',06);
+insert into stud1 values('Shankar',07);
+insert into stud1 values('Sathya',08);
+begin;
+delete from stud1 where sid=08;
+end transaction;
+select * from stud1;
+output:
+-------
+ 	sname	      sid
+1	Narmadha	6
+2	Shankar     	7
+rollback:
+----------
+drop table if exists stud1;
+create table stud1 (sname varchar(20),sid int);
+insert into stud1 values('Narmadha',06);
+insert into stud1 values('Shankar',07);
+insert into stud1 values('Sathya',08);
+begin;
+delete from stud1 where sid=08;
+rollback;
+select * from stud1;
+output:
+-------
+	sname	      sid
+1	Narmadha	6
+2	Shankar     	7
+3       Sathya          8
